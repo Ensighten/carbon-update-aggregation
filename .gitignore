@@ -1,0 +1,8 @@
+# carbon's virtualenv hack makes a virtualenv of the whole repo
+bin/
+lib/
+include/
+pip-selfcheck.json
+.Python
+# no compiled python
+*.pyc
