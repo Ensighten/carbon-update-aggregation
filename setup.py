@@ -13,10 +13,14 @@ config = {
     # Tell flake8 to ignore this line because the variable is read from carbon_update_aggregation/version.py in a hacky way
     'version': __version__,  # NOQA
     'install_requires': ['carbon>=0.9', 'whisper>=0.9'],
-    'py_modules': ['lib'],
+    'py_modules': ['lib', 'main'],
     'packages': ['carbon_update_aggregation'],
-    'scripts': ['bin/carbon-update-aggregation.py'],
-    'name': 'carbon_update_aggregation'
+    'name': 'carbon_update_aggregation',
+    'entry_points': {
+        'console_scripts': [
+            'carbon-update-aggregation = carbon_update_aggregation.main:main',
+        ],
+    },
 }
 
 setup(**config)
