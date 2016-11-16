@@ -33,6 +33,7 @@ def get_full_file_path(root_dir, filename):
 
 def update_aggregations(filename, schemas, root_dir):
     metrics_path = filename_to_metrics_path(filename)
+    changed = None
 
     for schema in schemas[:-1]:  # the last item is 'default', we don't want to bother changing anything to that
         if schema.matches(metrics_path):
@@ -41,9 +42,18 @@ def update_aggregations(filename, schemas, root_dir):
             full_filename = get_full_file_path(root_dir, filename)
             old_method = whisper.setAggregationMethod(full_filename, method)
             if method != old_method:
+                changed = {
+                    'filename': 'full_filename',
+                    'metrics_path': metrics_path,
+                    'matched_schema_name': schema.name,
+                    'old_aggregation_method': old_method,
+                    'new_aggregation_method': method,
+                }
                 print "changed {} to {} ({}, was {})".format(metrics_path, method, schema.name, old_method)
             # rules are in priority order, so only apply the first
-            return
+            break
+
+    return changed
 
 
 def update_storage_aggregations(storage_dir, conf_dir):
@@ -56,5 +66,12 @@ def update_storage_aggregations(storage_dir, conf_dir):
 
     schemas = carbon.storage.loadAggregationSchemas()
     root_dir = storage_dir
+
+    # collect a list of changes files for the calling code to process (this is especially useful for eg. ansible)
+    changes = []
     for filename in get_files(root_dir):
-        update_aggregations(filename, schemas, root_dir)
+        change_details = update_aggregations(filename, schemas, root_dir)
+        if change_details:
+            changes.append(change_details)
+
+    return changes
